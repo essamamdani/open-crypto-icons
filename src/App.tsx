@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
 import { Search, Zap, ChevronLeft, ChevronRight, Copy, CheckCircle, ArrowLeft } from 'lucide-react';
+import SEOHelmet from './SEOHelmet';
 
 interface Coin {
   id: string;
@@ -29,6 +30,12 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+       <SEOHelmet 
+         title="Open Crypto Icons - Free High-Quality Cryptocurrency Logos" 
+         description="Download high-quality cryptocurrency icons in SVG, PNG, and JPG formats. Search for Bitcoin, Ethereum, and thousands of other crypto logos."
+         image="https://essamamdani.github.io/open-crypto-icons/vite.svg"
+         url="https://essamamdani.github.io/open-crypto-icons/"
+       />
        <div className="text-center mb-10">
          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">High-Quality Crypto Icons</h2>
          <p className="mt-4 text-xl text-gray-500">Free to download in SVG, PNG, and JPG formats. ({icons.length} High-Res Icons Available)</p>
@@ -123,6 +130,7 @@ function IconDetail({ icons }: { icons: Coin[] }) {
   }
 
   const cdnUrl = `https://essamamdani.github.io/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`;
+  const pageUrl = `https://essamamdani.github.io/open-crypto-icons/${icon.symbol.toLowerCase()}`;
   const imgTag = `<img src="${cdnUrl}" alt="${icon.name} Logo" />`;
   const jsxTag = `import { ${icon.symbol.toUpperCase()}Icon } from 'open-crypto-icons'; // Example\n<img src="${cdnUrl}" alt="${icon.name}" />`;
 
@@ -172,6 +180,12 @@ function IconDetail({ icons }: { icons: Coin[] }) {
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <SEOHelmet 
+         title={`${icon.name} (${icon.symbol.toUpperCase()}) Icon SVG, PNG, JPG Download - Open Crypto Icons`} 
+         description={`Download ${icon.name} (${icon.symbol.toUpperCase()}) vector logo in SVG, PNG, and JPG formats. Free and open-source ${icon.name} crypto icon.`}
+         image={cdnUrl}
+         url={pageUrl}
+       />
       <button onClick={() => navigate('/')} className="mb-8 text-gray-500 hover:text-gray-900 flex items-center gap-2 transition-colors">
         <ArrowLeft size={20} /> Back to Library
       </button>
@@ -246,6 +260,12 @@ function IconDetail({ icons }: { icons: Coin[] }) {
 function About() {
   return (
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <SEOHelmet 
+         title="About - Open Crypto Icons" 
+         description="Learn about Open Crypto Icons, the most comprehensive open-source repository for cryptocurrency logos and icons."
+         image="https://essamamdani.github.io/open-crypto-icons/vite.svg"
+         url="https://essamamdani.github.io/open-crypto-icons/about"
+       />
       <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">About Open Crypto Icons</h2>
       <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-8 md:p-12 prose prose-blue prose-lg text-gray-600 max-w-none">
         <p>Welcome to <strong>Open Crypto Icons</strong>, the most comprehensive open-source repository for cryptocurrency logos and icons.</p>
