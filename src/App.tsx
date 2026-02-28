@@ -72,7 +72,7 @@ function App() {
     icon.symbol.toLowerCase().includes(search.toLowerCase()) || 
     icon.name.toLowerCase().includes(search.toLowerCase()) ||
     icon.id.toLowerCase().includes(search.toLowerCase())
-  );
+  ).slice(0, 150);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
