@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
-import { Search, Zap, ChevronLeft, ChevronRight, Copy, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Search, Moon, Sun, X, Check, Copy, Download, Sparkles, CheckCircle, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import SEOHelmet from './SEOHelmet';
 
 interface Coin {
@@ -9,121 +10,263 @@ interface Coin {
   name: string;
 }
 
-function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
-  const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
-  const navigate = useNavigate();
+export default function App() {
+  const [icons, setIcons] = useState<Coin[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setDarkMode(e.matches);
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
-  const filteredIcons = icons.filter(icon => 
-    icon.symbol.toLowerCase().includes(search.toLowerCase()) || 
-    icon.name.toLowerCase().includes(search.toLowerCase()) ||
-    icon.id.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
-  const totalPages = Math.ceil(filteredIcons.length / itemsPerPage);
-  const currentIcons = filteredIcons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  useEffect(() => {
+    fetch('/open-crypto-icons/coins.json')
+      .then(res => res.json())
+      .then(data => {
+        setIcons(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load coins.json", err);
+        setLoading(false);
+      });
+  }, []);
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-       <SEOHelmet 
+    <div className="min-h-screen flex flex-col font-sans selection:bg-emerald-500/30">
+      <header className="absolute top-0 left-0 right-0 z-20 bg-transparent">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+          <Link to="/" className="font-display text-2xl md:text-3xl font-bold tracking-tight hover:opacity-80 transition-opacity">
+            Crypto<span className="text-emerald-500">Icons</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/about" className="font-medium text-zinc-600 dark:text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors">
+              About
+            </Link>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-3 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 hover:bg-white dark:hover:bg-black transition-all shadow-sm"
+              aria-label="Toggle Dark Mode"
+            >
+              {darkMode ? <Sun size={20} className="text-emerald-400" /> : <Moon size={20} className="text-emerald-600" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-grow flex flex-col">
+        <Routes>
+          <Route path="/" element={<Home icons={icons} loading={loading} />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/:symbol" element={<IconDetail icons={icons} />} />
+        </Routes>
+      </main>
+
+      <footer className="mt-auto py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center text-sm text-zinc-500 font-medium">
+          Built with ❤️ for the Web3 Community. Open Source on GitHub.
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
+  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  const filteredIcons = useMemo(() => {
+    if (!search) return icons.slice(0, 100);
+    const lowerSearch = search.toLowerCase();
+    return icons.filter(icon => 
+      icon.symbol.toLowerCase().includes(lowerSearch) || 
+      icon.name.toLowerCase().includes(lowerSearch) ||
+      icon.id.toLowerCase().includes(lowerSearch)
+    ).slice(0, 150); // limit to prevent DOM lag on massive search results
+  }, [search, icons]);
+
+  const featuredCoins = useMemo(() => {
+    return icons.filter(i => ['btc','eth','usdt','sol','bnb','xrp','doge','ada'].includes(i.symbol.toLowerCase()));
+  }, [icons]);
+
+  return (
+    <>
+      <SEOHelmet 
          title="Open Crypto Icons - Free High-Quality Cryptocurrency Logos" 
          description="Download high-quality cryptocurrency icons in SVG, PNG, and JPG formats. Search for Bitcoin, Ethereum, and thousands of other crypto logos."
          image="https://essamamdani.github.io/open-crypto-icons/vite.svg"
          url="https://essamamdani.github.io/open-crypto-icons/"
-       />
-       <div className="text-center mb-10">
-         <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">High-Quality Crypto Icons</h2>
-         <p className="mt-4 text-xl text-gray-500">Free to download in SVG, PNG, and JPG formats. ({icons.length} High-Res Icons Available)</p>
-       </div>
-       
-       <div className="max-w-3xl mx-auto mb-10 relative shadow-sm rounded-lg">
-         <Search className="absolute left-5 top-4 text-gray-400" size={24} />
-         <input type="text" placeholder="Search for Bitcoin, Ethereum, USDT, SOL..." 
-           className="w-full pl-14 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none text-lg transition-all" 
-           value={search}
-           onChange={e => setSearch(e.target.value)} />
-       </div>
-       
-       {loading ? (
-         <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-         </div>
-       ) : (
-         <>
-           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {currentIcons.map((icon, index) => (
-                <div 
-                  key={`${icon.symbol}-${index}`} 
-                  onClick={() => navigate(`/${icon.symbol.toLowerCase()}`)}
-                  className="bg-white cursor-pointer border border-gray-100 p-6 rounded-2xl flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
-                >
-                  <div className="w-20 h-20 mb-4 flex items-center justify-center overflow-hidden p-2 group-hover:scale-110 transition-transform duration-300">
-                    <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={`${icon.name} logo`} 
-                         className="w-full h-full object-contain" />
-                  </div>
-                  <span className="text-lg font-bold text-gray-900 uppercase">{icon.symbol}</span>
-                  <span className="text-xs text-gray-500 text-center truncate w-full" title={icon.name}>{icon.name}</span>
-                </div>
-              ))}
-           </div>
-           
-           {filteredIcons.length === 0 && (
-              <div className="col-span-full text-center py-20 text-gray-500">
-                 No icons found matching "{search}".
-              </div>
-           )}
+      />
+      <section className={`relative transition-all duration-700 ease-in-out ${search ? 'pt-32 pb-12 min-h-[40vh]' : 'pt-32 pb-20 min-h-[60vh]'} px-6 overflow-hidden flex flex-col items-center justify-center`}>
+        {/* Background gradient blob */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] bg-emerald-500/20 dark:bg-emerald-500/10 blur-[100px] md:blur-[120px] rounded-full pointer-events-none transition-opacity duration-700" />
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-6 tracking-tighter leading-[1.1]"
+          >
+            Find the perfect <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600">crypto icon.</span>
+          </motion.h2>
+          
+          {!search && (
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-lg md:text-2xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto mb-12 font-medium"
+            >
+              Beautiful, scalable, open-source crypto logos for your Web3 project.
+            </motion.p>
+          )}
 
-           {totalPages > 1 && (
-             <div className="mt-12 flex justify-center items-center gap-4">
-               <button 
-                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                 disabled={currentPage === 1}
-                 className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-               >
-                 <ChevronLeft size={24} />
-               </button>
-               <span className="text-sm font-medium text-gray-700">
-                 Page {currentPage} of {totalPages}
-               </span>
-               <button 
-                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                 disabled={currentPage === totalPages}
-                 className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-               >
-                 <ChevronRight size={24} />
-               </button>
-             </div>
-           )}
-         </>
-       )}
-    </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className={`relative max-w-3xl mx-auto group transition-all duration-500 ${search ? 'mt-8' : 'mt-0'}`}
+          >
+            <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-emerald-500 transition-colors">
+              <Search size={28} strokeWidth={2.5} />
+            </div>
+            <input
+              type="text"
+              placeholder="Search for Bitcoin, ETH, SOL..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-2 border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500 rounded-3xl py-5 md:py-6 pl-16 pr-6 text-xl md:text-2xl outline-none transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-600 shadow-2xl shadow-emerald-500/5 text-zinc-900 dark:text-zinc-100"
+            />
+          </motion.div>
+        </div>
+        
+        {/* Decorative background icons */}
+        {!search && featuredCoins.length > 0 && (
+          <div className="absolute inset-0 -z-10 opacity-[0.05] dark:opacity-[0.08] pointer-events-none overflow-hidden">
+            <div className="grid grid-cols-4 md:grid-cols-6 gap-10 md:gap-20 rotate-12 scale-150">
+              {Array.from({ length: 24 }).map((_, i) => {
+                const icon = featuredCoins[i % featuredCoins.length];
+                return (
+                  <div key={`bg-${i}`} className="flex items-center justify-center filter grayscale">
+                    <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} className="w-20 h-20 opacity-50" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <div className="flex-1 max-w-7xl mx-auto px-6 py-6 w-full relative z-10">
+        {!search && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="mb-16"
+          >
+            <h3 className="font-display text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
+              <Sparkles className="text-emerald-500" size={28} />
+              Featured Coins
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
+              {featuredCoins.map((icon) => (
+                <button
+                  key={`feat-${icon.symbol}`}
+                  onClick={() => navigate(`/${icon.symbol.toLowerCase()}`)}
+                  className="group flex flex-col items-center justify-center p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain" />
+                  </div>
+                  <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                    {icon.symbol}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="font-display text-2xl md:text-3xl font-bold">
+            {search ? `Results for "${search}"` : 'Top Library'}
+          </h3>
+          <span className="text-sm md:text-base text-zinc-500 font-mono bg-zinc-100 dark:bg-zinc-900 px-3 py-1 rounded-full">
+            {icons.length} total
+          </span>
+        </div>
+
+        {loading ? (
+           <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+           </div>
+        ) : filteredIcons.length === 0 ? (
+          <div className="text-center py-24">
+            <p className="text-2xl text-zinc-500 font-display">No icons found for "{search}"</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 pb-20">
+            {filteredIcons.map((icon, index) => (
+              <button
+                key={`${icon.symbol}-${index}`}
+                onClick={() => navigate(`/${icon.symbol.toLowerCase()}`)}
+                className="group flex flex-col items-center justify-center p-6 md:p-8 aspect-square rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300"
+              >
+                <div className="w-12 h-12 mb-4 group-hover:scale-125 transition-transform duration-300">
+                  <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain" />
+                </div>
+                <span className="mt-auto text-xs font-mono text-zinc-500 dark:text-zinc-400 truncate w-full text-center group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors uppercase font-bold">
+                  {icon.symbol}
+                </span>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate w-full text-center mt-1">
+                  {icon.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
 function IconDetail({ icons }: { icons: Coin[] }) {
   const { symbol } = useParams();
   const navigate = useNavigate();
-  const [copiedImg, setCopiedImg] = useState(false);
-  const [copiedJsx, setCopiedJsx] = useState(false);
+  const [copiedType, setCopiedType] = useState<string | null>(null);
   
   const icon = icons.find(i => i.symbol.toLowerCase() === symbol?.toLowerCase());
 
   useEffect(() => {
-    // Scroll to top on page load
     window.scrollTo(0, 0);
   }, [symbol]);
 
   if (!icon) {
     return (
-      <div className="max-w-7xl mx-auto py-20 px-4 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Icon Not Found</h2>
-        <button onClick={() => navigate('/')} className="mt-4 text-blue-600 hover:underline flex items-center justify-center gap-2 mx-auto">
-          <ArrowLeft size={16} /> Back to Home
+      <div className="flex-1 flex flex-col items-center justify-center py-32 px-4 text-center">
+        <h2 className="text-3xl font-display font-bold text-zinc-900 dark:text-white mb-4">Icon Not Found</h2>
+        <button onClick={() => navigate('/')} className="text-emerald-500 hover:text-emerald-600 font-medium flex items-center gap-2">
+          <ArrowLeft size={16} /> Back to Search
         </button>
       </div>
     );
@@ -132,22 +275,16 @@ function IconDetail({ icons }: { icons: Coin[] }) {
   const cdnUrl = `https://essamamdani.github.io/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`;
   const pageUrl = `https://essamamdani.github.io/open-crypto-icons/${icon.symbol.toLowerCase()}`;
   const imgTag = `<img src="${cdnUrl}" alt="${icon.name} Logo" />`;
-  const jsxTag = `import { ${icon.symbol.toUpperCase()}Icon } from 'open-crypto-icons'; // Example\n<img src="${cdnUrl}" alt="${icon.name}" />`;
+  const reactTag = `import { ${icon.symbol.toUpperCase()}Icon } from 'open-crypto-icons';\n\n<${icon.symbol.toUpperCase()}Icon size={24} />`;
 
-  const copyToClipboard = (text: string, type: 'img' | 'jsx') => {
+  const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
-    if (type === 'img') {
-      setCopiedImg(true);
-      setTimeout(() => setCopiedImg(false), 2000);
-    } else {
-      setCopiedJsx(true);
-      setTimeout(() => setCopiedJsx(false), 2000);
-    }
+    setCopiedType(type);
+    setTimeout(() => setCopiedType(null), 2000);
   };
 
   const downloadIcon = (format: string) => {
     const svgPath = `/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`;
-    
     if (format === 'svg') {
       const link = document.createElement('a');
       link.href = svgPath;
@@ -155,7 +292,6 @@ function IconDetail({ icons }: { icons: Coin[] }) {
       link.click();
       return;
     }
-
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src = svgPath;
@@ -179,79 +315,74 @@ function IconDetail({ icons }: { icons: Coin[] }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex-1 max-w-5xl mx-auto py-32 px-4 sm:px-6 w-full">
       <SEOHelmet 
-         title={`${icon.name} (${icon.symbol.toUpperCase()}) Icon SVG, PNG, JPG Download - Open Crypto Icons`} 
+         title={`${icon.name} (${icon.symbol.toUpperCase()}) Icon SVG, PNG Download`} 
          description={`Download ${icon.name} (${icon.symbol.toUpperCase()}) vector logo in SVG, PNG, and JPG formats. Free and open-source ${icon.name} crypto icon.`}
          image={cdnUrl}
          url={pageUrl}
-       />
-      <button onClick={() => navigate('/')} className="mb-8 text-gray-500 hover:text-gray-900 flex items-center gap-2 transition-colors">
+      />
+      
+      <button onClick={() => navigate('/')} className="mb-8 text-zinc-500 hover:text-emerald-500 flex items-center gap-2 transition-colors font-medium">
         <ArrowLeft size={20} /> Back to Library
       </button>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-        {/* Left Side: Big Icon */}
-        <div className="md:w-5/12 bg-gray-50 p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100">
-          <div className="w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center p-4 bg-white rounded-full shadow-sm mb-8">
-            <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={`${icon.name} logo`} className="w-full h-full object-contain" />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row"
+      >
+        <div className="flex-1 bg-zinc-50 dark:bg-zinc-950/50 p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
+          <div className="w-48 h-48 sm:w-64 sm:h-64 p-10 bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-xl shadow-emerald-500/5 border border-zinc-200 dark:border-zinc-800 mb-8 relative z-10 group">
+            <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 text-center">{icon.name}</h2>
-          <p className="text-lg font-medium text-gray-500 uppercase tracking-widest mt-2">{icon.symbol}</p>
+          <h2 className="font-display text-4xl font-black mb-2 tracking-tight text-zinc-900 dark:text-white">{icon.name}</h2>
+          <p className="text-zinc-500 font-mono text-sm bg-zinc-200/50 dark:bg-zinc-800/50 px-3 py-1 rounded-full uppercase">{icon.symbol}</p>
         </div>
 
-        {/* Right Side: Downloads & CDN */}
-        <div className="md:w-7/12 p-8 md:p-12 flex flex-col justify-center">
-          
-          <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider">Download Formats</h3>
-          <div className="flex flex-wrap gap-4 mb-10">
-            <button onClick={() => downloadIcon('svg')} className="flex-1 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-100 font-semibold py-4 px-6 rounded-xl transition-all text-center">
-              SVG (Vector)
-            </button>
-            <button onClick={() => downloadIcon('png')} className="flex-1 bg-green-50 hover:bg-green-600 text-green-700 hover:text-white border border-green-100 font-semibold py-4 px-6 rounded-xl transition-all text-center">
-              PNG (Transparent)
-            </button>
-            <button onClick={() => downloadIcon('jpg')} className="flex-1 bg-yellow-50 hover:bg-yellow-500 text-yellow-700 hover:text-white border border-yellow-100 font-semibold py-4 px-6 rounded-xl transition-all text-center">
-              JPG (White BG)
-            </button>
+        <div className="flex-1 p-8 md:p-12 flex flex-col gap-8">
+          <div>
+             <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4">Download Assets</h3>
+             <div className="flex flex-col sm:flex-row gap-3">
+               <button onClick={() => downloadIcon('svg')} className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-3 px-4 rounded-xl font-bold transition-all active:scale-[0.98]">
+                 <Download size={18} /> SVG
+               </button>
+               <button onClick={() => downloadIcon('png')} className="flex-1 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 py-3 px-4 rounded-xl font-bold transition-all active:scale-[0.98]">
+                 PNG
+               </button>
+               <button onClick={() => downloadIcon('jpg')} className="flex-1 flex items-center justify-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 py-3 px-4 rounded-xl font-bold transition-all active:scale-[0.98]">
+                 JPG
+               </button>
+             </div>
           </div>
 
-          <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider mt-4">CDN Links</h3>
-          
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-600">HTML Image Tag</span>
-                <button onClick={() => copyToClipboard(imgTag, 'img')} className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-800">
-                  {copiedImg ? <><CheckCircle size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
-                </button>
-              </div>
-              <div className="bg-gray-800 text-gray-100 p-4 rounded-xl font-mono text-sm overflow-x-auto whitespace-nowrap">
-                {imgTag}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-600">React / JSX</span>
-                <button onClick={() => copyToClipboard(jsxTag, 'jsx')} className="text-sm flex items-center gap-1 text-blue-600 hover:text-blue-800">
-                  {copiedJsx ? <><CheckCircle size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
-                </button>
-              </div>
-              <div className="bg-gray-800 text-gray-100 p-4 rounded-xl font-mono text-sm overflow-x-auto whitespace-nowrap">
-                {jsxTag}
-              </div>
-            </div>
-            
-            <div>
-              <span className="text-sm font-medium text-gray-600 mb-2 block">Direct SVG URL</span>
-              <a href={cdnUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-500 hover:underline break-all">
-                {cdnUrl}
-              </a>
-            </div>
-          </div>
-
+          <CodeSnippet label="HTML Image Tag" code={imgTag} type="img" copiedType={copiedType} onCopy={copyToClipboard} />
+          <CodeSnippet label="Direct CDN Link" code={cdnUrl} type="cdn" copiedType={copiedType} onCopy={copyToClipboard} />
         </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function CodeSnippet({ label, code, type, copiedType, onCopy }: any) {
+  const isCopied = copiedType === type;
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">{label}</span>
+      </div>
+      <div className="relative group">
+        <pre className="p-4 bg-zinc-100 dark:bg-zinc-950 rounded-2xl overflow-x-auto text-sm font-mono text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 shadow-inner">
+          <code>{code}</code>
+        </pre>
+        <button
+          onClick={() => onCopy(code, type)}
+          className="absolute top-1/2 -translate-y-1/2 right-3 p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-700 active:scale-95"
+          aria-label="Copy code"
+        >
+          {isCopied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} className="text-zinc-500 dark:text-zinc-400" />}
+        </button>
       </div>
     </div>
   );
@@ -259,75 +390,29 @@ function IconDetail({ icons }: { icons: Coin[] }) {
 
 function About() {
   return (
-    <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+    <div className="flex-1 max-w-4xl mx-auto py-32 px-4 sm:px-6 w-full">
       <SEOHelmet 
          title="About - Open Crypto Icons" 
          description="Learn about Open Crypto Icons, the most comprehensive open-source repository for cryptocurrency logos and icons."
          image="https://essamamdani.github.io/open-crypto-icons/vite.svg"
          url="https://essamamdani.github.io/open-crypto-icons/about"
        />
-      <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">About Open Crypto Icons</h2>
-      <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-8 md:p-12 prose prose-blue prose-lg text-gray-600 max-w-none">
-        <p>Welcome to <strong>Open Crypto Icons</strong>, the most comprehensive open-source repository for cryptocurrency logos and icons.</p>
-        <p>Our goal is to provide developers, designers, and creators with high-quality, up-to-date cryptocurrency icons that can be seamlessly integrated into any project. No more hunting for the right logo format.</p>
-        <h3 className="text-gray-900 font-bold mt-8 mb-4">Features:</h3>
-        <ul className="space-y-2">
-          <li><span className="font-semibold text-gray-800">Free to use</span> in personal and commercial projects.</li>
-          <li><span className="font-semibold text-gray-800">Multiple Formats:</span> Instantly download in SVG, PNG, and JPG formats.</li>
-          <li><span className="font-semibold text-gray-800">Constantly Updated:</span> Synchronized regularly with CoinGecko and TradingView.</li>
-          <li><span className="font-semibold text-gray-800">High Availability:</span> Hosted on GitHub Pages with robust CDN infrastructure ensuring fast delivery.</li>
+      <h2 className="font-display text-5xl font-black mb-10 text-center text-zinc-900 dark:text-white">About Open Crypto Icons</h2>
+      <div className="bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-8 md:p-12 prose prose-lg dark:prose-invert max-w-none">
+        <p className="text-xl leading-relaxed text-zinc-600 dark:text-zinc-300">
+          Welcome to <strong>Open Crypto Icons</strong>, the most comprehensive open-source repository for cryptocurrency logos and icons.
+        </p>
+        <p className="text-zinc-600 dark:text-zinc-300">
+          Our goal is to provide developers, designers, and creators with high-quality, up-to-date cryptocurrency icons that can be seamlessly integrated into any project. No more hunting for the right logo format.
+        </p>
+        <h3 className="font-display font-bold mt-8 mb-4 text-zinc-900 dark:text-white">Features:</h3>
+        <ul className="space-y-3 text-zinc-600 dark:text-zinc-300">
+          <li><span className="font-bold text-emerald-500">Free to use</span> in personal and commercial projects.</li>
+          <li><span className="font-bold text-emerald-500">Multiple Formats:</span> Instantly download in SVG, PNG, and JPG formats.</li>
+          <li><span className="font-bold text-emerald-500">Constantly Updated:</span> Synchronized regularly with major market databases.</li>
+          <li><span className="font-bold text-emerald-500">High Availability:</span> Hosted on GitHub Pages with robust CDN infrastructure ensuring fast delivery.</li>
         </ul>
       </div>
     </div>
   );
 }
-
-function App() {
-  const [icons, setIcons] = useState<Coin[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/open-crypto-icons/coins.json')
-      .then(res => res.json())
-      .then(data => {
-        setIcons(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to load coins.json", err);
-        setLoading(false);
-      });
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <Link to="/" className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-             <Zap className="text-yellow-500 fill-current" /> Open Crypto Icons
-          </Link>
-          <nav>
-            <Link to="/" className="mx-3 font-medium text-gray-600 hover:text-gray-900">Home</Link>
-            <Link to="/about" className="mx-3 font-medium text-gray-600 hover:text-gray-900">About Us</Link>
-          </nav>
-        </div>
-      </header>
-      
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<Home icons={icons} loading={loading} />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/:symbol" element={<IconDetail icons={icons} />} />
-        </Routes>
-      </main>
-      
-      <footer className="bg-white border-t py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center text-sm text-gray-500 font-medium">
-          Built with ❤️ for the Web3 Community. Open Source on GitHub.
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-export default App;
