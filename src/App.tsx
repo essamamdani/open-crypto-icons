@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Download, Info, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Zap } from 'lucide-react';
 
 interface Coin {
   id: string;
@@ -14,7 +14,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/coins.json')
+    fetch('/open-crypto-icons/coins.json')
       .then(res => res.json())
       .then(data => {
         // Ensure unique coins by symbol
@@ -36,7 +36,7 @@ function App() {
   }, []);
 
   const downloadIcon = (symbol: string, format: string) => {
-    const svgPath = `/icons_svg/${symbol.toLowerCase()}.svg`;
+    const svgPath = `/open-crypto-icons/icons_svg/${symbol.toLowerCase()}.svg`;
     
     if (format === 'svg') {
       const link = document.createElement('a');
@@ -112,7 +112,7 @@ function App() {
                     {filteredIcons.map((icon, index) => (
                       <div key={`${icon.symbol}-${index}`} className="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col items-center justify-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                         <div className="w-20 h-20 mb-4 flex items-center justify-center overflow-hidden p-2 group-hover:scale-110 transition-transform duration-300">
-                          <img src={`/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={`${icon.name} logo`} 
+                          <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={`${icon.name} logo`} 
                                onError={(e) => { e.currentTarget.style.display='none' }} 
                                className="w-full h-full object-contain" />
                         </div>
