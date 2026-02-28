@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# 🪙 Open Crypto Icons
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to **Open Crypto Icons**, the most comprehensive open-source repository for cryptocurrency logos and icons. Our goal is to provide developers, designers, and creators with high-quality, up-to-date cryptocurrency icons that can be seamlessly integrated into any project. No more hunting for the right logo format.
 
-Currently, two official plugins are available:
+## Features:
+- **Free to Use:** Fully open-source and free to use in personal and commercial projects.
+- **2x Retina SVGs:** All icons have been scaled and optimized to retina (2x) display quality with clean `.svg` code.
+- **Multiple Formats:** Instantly download in SVG, PNG, and JPG formats via our Web App.
+- **Constantly Updated:** Synchronized automatically with CoinGecko and TradingView.
+- **High Availability:** Hosted on GitHub Pages with robust CDN infrastructure ensuring fast delivery.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Usage
 
-## React Compiler
+### Using the Search App
+1. Go to our [GitHub Pages App URL](https://essamamdani.github.io/open-crypto-icons/)
+2. Search for any coin by Name (e.g. `Bitcoin`) or Symbol (e.g. `BTC`)
+3. Hover over any icon and download it in SVG, PNG, or JPG formats.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Using as a CDN in your projects
+Since this is hosted on GitHub Pages, you can directly hotlink the SVGs in your HTML, React, or Vue apps:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```html
+<img src="https://essamamdani.github.io/open-crypto-icons/icons_svg/btc.svg" alt="Bitcoin Logo" />
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```jsx
+// React Example
+const CoinIcon = ({ symbol }) => (
+  <img src={`https://essamamdani.github.io/open-crypto-icons/icons_svg/${symbol.toLowerCase()}.svg`} alt={symbol} />
+);
 ```
+
+### Direct Download
+You can also browse the [`public/icons_svg/`](public/icons_svg/) folder in this repository and download the RAW `.svg` files directly to your machine.
