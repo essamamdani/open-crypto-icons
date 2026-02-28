@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Info, Download } from 'lucide-react';
+import { Search, Download, Info, Zap } from 'lucide-react';
+
+interface Coin {
+  id: string;
+  symbol: string;
+  name: string;
+}
 
 function App() {
-  const [icons, setIcons] = useState<{symbol: string, name: string}[]>([]);
+  const [icons, setIcons] = useState<Coin[]>([]);
   const [search, setSearch] = useState("");
   const [view, setView] = useState("home");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now we mock the icons. In production we will load them dynamically.
-    setIcons([
-      { symbol: "BTC", name: "Bitcoin" },
-      { symbol: "ETH", name: "Ethereum" },
-      { symbol: "USDT", name: "Tether" },
-      { symbol: "BNB", name: "BNB" },
-      { symbol: "SOL", name: "Solana" },
-      { symbol: "XRP", name: "XRP" },
-      { symbol: "ADA", name: "Cardano" },
-      { symbol: "DOGE", name: "Dogecoin" }
-    ]);
+    fetch('/coins.json')
+      .then(res => res.json())
+      .then(data => {
+        // Ensure unique coins by symbol
+        const uniqueCoins = data.reduce((acc: Coin[], current: Coin) => {
+          const x = acc.find(item => item.symbol === current.symbol);
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, []);
+        setIcons(uniqueCoins);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load coins.json", err);
+        setLoading(false);
+      });
   }, []);
 
   const downloadIcon = (symbol: string, format: string) => {
@@ -32,6 +47,7 @@ function App() {
     }
 
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.src = svgPath;
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -52,14 +68,18 @@ function App() {
     };
   };
 
-  const filteredIcons = icons.filter(icon => icon.symbol.toLowerCase().includes(search.toLowerCase()) || icon.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredIcons = icons.filter(icon => 
+    icon.symbol.toLowerCase().includes(search.toLowerCase()) || 
+    icon.name.toLowerCase().includes(search.toLowerCase()) ||
+    icon.id.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
-             🪙 Open Crypto Icons
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
+             <Zap className="text-yellow-500 fill-current" /> Open Crypto Icons
           </h1>
           <nav>
             <button onClick={() => setView('home')} className={`mx-3 font-medium ${view === 'home' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>Home</button>
@@ -69,58 +89,73 @@ function App() {
       </header>
       <main>
         {view === 'home' ? (
-          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
              <div className="px-4 py-6 sm:px-0">
                <div className="text-center mb-10">
                  <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">High-Quality Crypto Icons</h2>
-                 <p className="mt-4 text-xl text-gray-500">Free to download in SVG, PNG, and JPG formats.</p>
+                 <p className="mt-4 text-xl text-gray-500">Free to download in SVG, PNG, and JPG formats. Search thousands of tokens.</p>
                </div>
-               <div className="max-w-2xl mx-auto mb-12 relative shadow-sm rounded-lg">
-                 <Search className="absolute left-4 top-4 text-gray-400" />
-                 <input type="text" placeholder="Search for Bitcoin, Ethereum, etc..." 
-                   className="w-full pl-12 pr-4 py-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-lg" 
+               <div className="max-w-3xl mx-auto mb-12 relative shadow-sm rounded-lg">
+                 <Search className="absolute left-5 top-4 text-gray-400" size={24} />
+                 <input type="text" placeholder="Search for Bitcoin, Ethereum, USDT, SOL..." 
+                   className="w-full pl-14 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none text-lg transition-all" 
+                   value={search}
                    onChange={e => setSearch(e.target.value)} />
                </div>
                
-               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {filteredIcons.map(icon => (
-                    <div key={icon.symbol} className="bg-white border p-6 rounded-xl flex flex-col items-center justify-center shadow-sm hover:shadow-lg transition group">
-                      <div className="w-20 h-20 bg-gray-50 rounded-full mb-4 flex items-center justify-center text-gray-400 overflow-hidden p-2 group-hover:scale-110 transition-transform">
-                        <img src={`/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} onError={(e) => { e.currentTarget.src = '/vite.svg' }} className="w-full h-full object-contain" />
+               {loading ? (
+                 <div className="flex justify-center items-center py-20">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                 </div>
+               ) : (
+                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                    {filteredIcons.map((icon, index) => (
+                      <div key={`${icon.symbol}-${index}`} className="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col items-center justify-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+                        <div className="w-20 h-20 mb-4 flex items-center justify-center overflow-hidden p-2 group-hover:scale-110 transition-transform duration-300">
+                          <img src={`/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={`${icon.name} logo`} 
+                               onError={(e) => { e.currentTarget.style.display='none' }} 
+                               className="w-full h-full object-contain" />
+                        </div>
+                        <span className="text-lg font-bold text-gray-900 uppercase">{icon.symbol}</span>
+                        <span className="text-xs text-gray-500 mb-5 text-center truncate w-full" title={icon.name}>{icon.name}</span>
+                        <div className="mt-auto flex flex-wrap justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <button onClick={() => downloadIcon(icon.symbol, 'svg')} className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-100 font-semibold transition-colors">SVG</button>
+                          <button onClick={() => downloadIcon(icon.symbol, 'png')} className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded hover:bg-green-100 font-semibold transition-colors">PNG</button>
+                          <button onClick={() => downloadIcon(icon.symbol, 'jpg')} className="text-xs bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded hover:bg-yellow-100 font-semibold transition-colors">JPG</button>
+                        </div>
                       </div>
-                      <span className="text-lg font-bold text-gray-900">{icon.symbol}</span>
-                      <span className="text-sm text-gray-500 mb-4">{icon.name}</span>
-                      <div className="mt-auto flex flex-wrap justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => downloadIcon(icon.symbol, 'svg')} className="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 font-medium">SVG</button>
-                        <button onClick={() => downloadIcon(icon.symbol, 'png')} className="text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-md hover:bg-green-100 font-medium">PNG</button>
-                        <button onClick={() => downloadIcon(icon.symbol, 'jpg')} className="text-xs bg-yellow-50 text-yellow-600 px-3 py-1.5 rounded-md hover:bg-yellow-100 font-medium">JPG</button>
+                    ))}
+                    {filteredIcons.length === 0 && (
+                      <div className="col-span-full text-center py-20 text-gray-500">
+                         No icons found matching "{search}".
                       </div>
-                    </div>
-                  ))}
-               </div>
+                    )}
+                 </div>
+               )}
              </div>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-extrabold text-gray-900 mb-6">About Open Crypto Icons</h2>
-            <div className="prose prose-blue prose-lg text-gray-500">
-              <p>Welcome to Open Crypto Icons, the most comprehensive open-source repository for cryptocurrency logos and icons.</p>
+          <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">About Open Crypto Icons</h2>
+            <div className="bg-white shadow-sm rounded-2xl p-8 md:p-12 prose prose-blue prose-lg text-gray-600 max-w-none">
+              <p>Welcome to <strong>Open Crypto Icons</strong>, the most comprehensive open-source repository for cryptocurrency logos and icons.</p>
               <p>Our goal is to provide developers, designers, and creators with high-quality, up-to-date cryptocurrency icons that can be seamlessly integrated into any project. No more hunting for the right logo format.</p>
-              <h3>Features:</h3>
-              <ul>
-                <li>Free to use in personal and commercial projects.</li>
-                <li>Available in SVG, PNG, and JPG formats.</li>
-                <li>Updated regularly via our automated background workers pulling from CoinGecko and TradingView sources.</li>
-                <li>Hosted on GitHub Pages with a robust CDN infrastructure ensuring fast delivery.</li>
+              <h3 className="text-gray-900 font-bold mt-8 mb-4">Features:</h3>
+              <ul className="space-y-2">
+                <li><span className="font-semibold text-gray-800">Free to use</span> in personal and commercial projects.</li>
+                <li><span className="font-semibold text-gray-800">Multiple Formats:</span> Instantly download in SVG, PNG, and JPG formats.</li>
+                <li><span className="font-semibold text-gray-800">Constantly Updated:</span> Synchronized regularly with CoinGecko and TradingView.</li>
+                <li><span className="font-semibold text-gray-800">SEO & Developer Friendly:</span> Comprehensive search by coin name (e.g., Bitcoin) or symbol (e.g., BTC).</li>
+                <li><span className="font-semibold text-gray-800">High Availability:</span> Hosted on GitHub Pages with robust CDN infrastructure ensuring fast delivery.</li>
               </ul>
-              <p>This project is maintained as an open-source initiative. Contributions are welcome on our GitHub repository.</p>
+              <p className="mt-8 border-t pt-8">This project is maintained as an open-source initiative. Contributions are welcome on our GitHub repository.</p>
             </div>
           </div>
         )}
       </main>
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-center text-sm text-gray-500">
-          Built with ❤️ for the Crypto Community.
+      <footer className="bg-white border-t py-8 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center text-sm text-gray-500 font-medium">
+          Built with ❤️ for the Web3 Community. Open Source on GitHub.
         </div>
       </footer>
     </div>
