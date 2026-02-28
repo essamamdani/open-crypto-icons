@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Zap } from 'lucide-react';
+import { Search, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Coin {
   id: string;
@@ -12,21 +12,17 @@ function App() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState("home");
   const [loading, setLoading] = useState(true);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   useEffect(() => {
     fetch('/open-crypto-icons/coins.json')
       .then(res => res.json())
       .then(data => {
-        // Ensure unique coins by symbol
-        const uniqueCoins = data.reduce((acc: Coin[], current: Coin) => {
-          const x = acc.find(item => item.symbol === current.symbol);
-          if (!x) {
-            return acc.concat([current]);
-          } else {
-            return acc;
-          }
-        }, []);
-        setIcons(uniqueCoins);
+        // Data is already sorted and filtered (only valid SVGs) from backend
+        setIcons(data);
         setLoading(false);
       })
       .catch(err => {
@@ -34,6 +30,11 @@ function App() {
         setLoading(false);
       });
   }, []);
+
+  // Reset to page 1 on new search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   const downloadIcon = (symbol: string, format: string) => {
     const svgPath = `/open-crypto-icons/icons_svg/${symbol.toLowerCase()}.svg`;
@@ -72,11 +73,14 @@ function App() {
     icon.symbol.toLowerCase().includes(search.toLowerCase()) || 
     icon.name.toLowerCase().includes(search.toLowerCase()) ||
     icon.id.toLowerCase().includes(search.toLowerCase())
-  ).slice(0, 150);
+  );
+
+  const totalPages = Math.ceil(filteredIcons.length / itemsPerPage);
+  const currentIcons = filteredIcons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
              <Zap className="text-yellow-500 fill-current" /> Open Crypto Icons
@@ -87,33 +91,34 @@ function App() {
           </nav>
         </div>
       </header>
-      <main>
+      
+      <main className="flex-grow">
         {view === 'home' ? (
-          <div className="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-             <div className="px-4 py-6 sm:px-0">
-               <div className="text-center mb-10">
-                 <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">High-Quality Crypto Icons</h2>
-                 <p className="mt-4 text-xl text-gray-500">Free to download in SVG, PNG, and JPG formats. Search thousands of tokens.</p>
+          <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+             <div className="text-center mb-10">
+               <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">High-Quality Crypto Icons</h2>
+               <p className="mt-4 text-xl text-gray-500">Free to download in SVG, PNG, and JPG formats. ({icons.length} High-Res Icons Available)</p>
+             </div>
+             
+             <div className="max-w-3xl mx-auto mb-10 relative shadow-sm rounded-lg">
+               <Search className="absolute left-5 top-4 text-gray-400" size={24} />
+               <input type="text" placeholder="Search for Bitcoin, Ethereum, USDT, SOL..." 
+                 className="w-full pl-14 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none text-lg transition-all" 
+                 value={search}
+                 onChange={e => setSearch(e.target.value)} />
+             </div>
+             
+             {loading ? (
+               <div className="flex justify-center items-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                </div>
-               <div className="max-w-3xl mx-auto mb-12 relative shadow-sm rounded-lg">
-                 <Search className="absolute left-5 top-4 text-gray-400" size={24} />
-                 <input type="text" placeholder="Search for Bitcoin, Ethereum, USDT, SOL..." 
-                   className="w-full pl-14 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 focus:outline-none text-lg transition-all" 
-                   value={search}
-                   onChange={e => setSearch(e.target.value)} />
-               </div>
-               
-               {loading ? (
-                 <div className="flex justify-center items-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                 </div>
-               ) : (
-                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                    {filteredIcons.map((icon, index) => (
-                      <div key={`${icon.symbol}-${index}`} className="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col items-center justify-center shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+             ) : (
+               <>
+                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    {currentIcons.map((icon, index) => (
+                      <div key={`${icon.symbol}-${index}`} className="bg-white border border-gray-100 p-6 rounded-2xl flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
                         <div className="w-20 h-20 mb-4 flex items-center justify-center overflow-hidden p-2 group-hover:scale-110 transition-transform duration-300">
                           <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={`${icon.name} logo`} 
-                               onError={(e) => { e.currentTarget.style.display='none' }} 
                                className="w-full h-full object-contain" />
                         </div>
                         <span className="text-lg font-bold text-gray-900 uppercase">{icon.symbol}</span>
@@ -125,19 +130,43 @@ function App() {
                         </div>
                       </div>
                     ))}
-                    {filteredIcons.length === 0 && (
-                      <div className="col-span-full text-center py-20 text-gray-500">
-                         No icons found matching "{search}".
-                      </div>
-                    )}
                  </div>
-               )}
-             </div>
+                 
+                 {filteredIcons.length === 0 && (
+                    <div className="col-span-full text-center py-20 text-gray-500">
+                       No icons found matching "{search}".
+                    </div>
+                 )}
+
+                 {/* Pagination Controls */}
+                 {totalPages > 1 && (
+                   <div className="mt-12 flex justify-center items-center gap-4">
+                     <button 
+                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                       disabled={currentPage === 1}
+                       className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                     >
+                       <ChevronLeft size={24} />
+                     </button>
+                     <span className="text-sm font-medium text-gray-700">
+                       Page {currentPage} of {totalPages}
+                     </span>
+                     <button 
+                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                       disabled={currentPage === totalPages}
+                       className="p-2 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                     >
+                       <ChevronRight size={24} />
+                     </button>
+                   </div>
+                 )}
+               </>
+             )}
           </div>
         ) : (
           <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl font-extrabold text-gray-900 mb-8 text-center">About Open Crypto Icons</h2>
-            <div className="bg-white shadow-sm rounded-2xl p-8 md:p-12 prose prose-blue prose-lg text-gray-600 max-w-none">
+            <div className="bg-white shadow-sm border border-gray-100 rounded-2xl p-8 md:p-12 prose prose-blue prose-lg text-gray-600 max-w-none">
               <p>Welcome to <strong>Open Crypto Icons</strong>, the most comprehensive open-source repository for cryptocurrency logos and icons.</p>
               <p>Our goal is to provide developers, designers, and creators with high-quality, up-to-date cryptocurrency icons that can be seamlessly integrated into any project. No more hunting for the right logo format.</p>
               <h3 className="text-gray-900 font-bold mt-8 mb-4">Features:</h3>
@@ -153,7 +182,8 @@ function App() {
           </div>
         )}
       </main>
-      <footer className="bg-white border-t py-8 mt-12">
+      
+      <footer className="bg-white border-t py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center text-sm text-gray-500 font-medium">
           Built with ❤️ for the Web3 Community. Open Source on GitHub.
         </div>
