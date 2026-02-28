@@ -92,7 +92,7 @@ export default function App() {
 function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  const itemsPerPage = 48;
   useEffect(() => { setCurrentPage(1); }, [search]);
   const navigate = useNavigate();
 
