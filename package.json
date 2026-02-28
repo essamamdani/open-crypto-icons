@@ -1,6 +1,6 @@
 {
-  "name": "openclaw-sandbox-crypto-icons",
-  "version": "0.0.0",
+  "name": "open-crypto-icons",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -45,7 +45,7 @@
     "type": "git",
     "url": "git+https://github.com/essamamdani/open-crypto-icons.git"
   },
-  "keywords": [],
+  "keywords": ["crypto", "icons", "cryptocurrency", "svg", "react", "bitcoin", "ethereum", "web3", "defi"],
   "author": "",
   "license": "ISC",
   "bugs": {
