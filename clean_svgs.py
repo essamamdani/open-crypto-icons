@@ -13,12 +13,13 @@ for f in os.listdir(svg_dir):
     # Remove TradingView comment
     content = content.replace("<!-- by TradingView -->", "")
     
-    # Remove background path like <path fill="#F0F3FA" d="M0 0h56v56H0z"/>
-    # or <path fill="url(#axm5xc3fi)" d="M0 0h56v56H0z"/>
-    # Use regex
-    content = re.sub(r'<path[^>]*?d="M0 0h56v56H0z"[^>]*?/>', '', content)
+    # DO NOT remove colored background paths anymore!
+    # Instead, we just remove empty paths or generic white/gray ones if needed, 
+    # but to be safe we will just keep the shape so colors are preserved.
+    # We can turn the square into a circle by adding rx="28" to the main box
+    content = re.sub(r'<path([^>]*?)d="M0 0h56v56H0z"([^>]*?)/>', r'<rect\1width="56" height="56" rx="28"\2/>', content)
     
     if content != orig:
         with open(path, "w") as file:
             file.write(content)
-print("SVGs cleaned.")
+print("SVGs cleaned safely without destroying colors.")
