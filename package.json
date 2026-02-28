@@ -1,6 +1,6 @@
 {
   "name": "open-crypto-icons",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -45,7 +45,17 @@
     "type": "git",
     "url": "git+https://github.com/essamamdani/open-crypto-icons.git"
   },
-  "keywords": ["crypto", "icons", "cryptocurrency", "svg", "react", "bitcoin", "ethereum", "web3", "defi"],
+  "keywords": [
+    "crypto",
+    "icons",
+    "cryptocurrency",
+    "svg",
+    "react",
+    "bitcoin",
+    "ethereum",
+    "web3",
+    "defi"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
