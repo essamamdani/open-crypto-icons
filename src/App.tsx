@@ -169,7 +169,7 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
         {/* Decorative background icons */}
         {!search && featuredCoins.length > 0 && (
           <div className="absolute inset-0 -z-10 opacity-[0.05] dark:opacity-[0.08] pointer-events-none overflow-hidden">
-            <div className="grid grid-cols-4 md:grid-cols-6 gap-10 md:gap-20 rotate-12 scale-150">
+            <div className="grid grid-cols-4 md:grid-cols-6 gap-6 md:gap-12 rotate-12 scale-[1.3] opacity-60">
               {Array.from({ length: 24 }).map((_, i) => {
                 const icon = featuredCoins[i % featuredCoins.length];
                 return (
@@ -195,7 +195,7 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
               <Sparkles className="text-emerald-500" size={28} />
               Featured Coins
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3 md:gap-4">
               {featuredCoins.map((icon) => (
                 <button
                   key={`feat-${icon.symbol}`}
@@ -233,14 +233,14 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 pb-20">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-5 pb-20">
             {currentIcons.map((icon: any, index: number) => (
               <button
                 key={`${icon.symbol}-${index}`}
                 onClick={() => navigate(`/${icon.symbol.toLowerCase()}`)}
-                className="group flex flex-col items-center justify-center p-6 md:p-8 aspect-square rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300"
+                className="group flex flex-col items-center justify-center p-5 md:p-8 aspect-square rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm hover:shadow-lg hover:border-emerald-500 dark:hover:border-emerald-500 hover:-translate-y-1 hover:shadow-emerald-500/5 transition-all duration-300"
               >
-                <div className="w-12 h-12 mb-4 group-hover:scale-125 transition-transform duration-300">
+                <div className="w-10 h-10 md:w-12 md:h-12 mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">
                   <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain" />
                 </div>
                 <span className="mt-auto text-xs font-mono text-zinc-500 dark:text-zinc-400 truncate w-full text-center group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors uppercase font-bold">
