@@ -1,83 +1,51 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/App.tsx', 'utf8');
 
-// Fix the single icon detail layout cutting off on the left
-// Changing flex-row setup to correctly stack or space without clipping the icon block
+// Improve the hero grid to look more like the Apple/Lucide aesthetic
 code = code.replace(
-  'className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row"',
-  'className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row w-full max-w-5xl"'
+  '<div className="grid grid-cols-4 md:grid-cols-6 gap-10 md:gap-20 rotate-12 scale-150">',
+  '<div className="grid grid-cols-4 md:grid-cols-6 gap-6 md:gap-12 rotate-12 scale-[1.3] opacity-60">'
 );
 
-// Specifically fixing the left pane padding and sizing for the icon detail view
+// Improve the cards for featured coins
 code = code.replace(
-  'className="flex-1 bg-zinc-50 dark:bg-zinc-950/50 p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative overflow-hidden"',
-  'className="w-full md:w-5/12 bg-zinc-50 dark:bg-zinc-950/50 p-8 sm:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative"'
+  'className="flex flex-col items-center justify-center p-6 aspect-square rounded-3xl bg-zinc-900 border border-zinc-800 hover:border-emerald-500 hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300"',
+  'className="group flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"'
 );
 
-// Re-add pagination to the Home component
-// First find the bottom part of Home
-const paginationSnippet = `
-                 {totalPages > 1 && (
-                   <div className="mt-12 flex justify-center items-center gap-4 w-full col-span-full">
-                     <button 
-                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                       disabled={currentPage === 1}
-                       className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                     >
-                       <ChevronLeft size={24} />
-                     </button>
-                     <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                       Page {currentPage} of {totalPages}
-                     </span>
-                     <button 
-                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                       disabled={currentPage === totalPages}
-                       className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                     >
-                       <ChevronRight size={24} />
-                     </button>
-                   </div>
-                 )}
-`;
-
-// Insert ChevronLeft and ChevronRight in lucide imports if missing
-if (!code.includes('ChevronLeft')) {
-  code = code.replace("import { Search, Moon, Sun", "import { Search, Moon, Sun, ChevronLeft, ChevronRight");
-}
-
-// Ensure Home has currentPage state
-if (!code.includes('const [currentPage, setCurrentPage] = useState(1);')) {
-  code = code.replace(
-    'const [search, setSearch] = useState("");',
-    'const [search, setSearch] = useState("");\n  const [currentPage, setCurrentPage] = useState(1);\n  const itemsPerPage = 50;\n  useEffect(() => { setCurrentPage(1); }, [search]);'
-  );
-}
-
-// Fix filteredIcons logic in Home to not slice at 150 but use pagination slice
+// Improve the text inside featured cards
 code = code.replace(
-  /return icons\.filter\(icon =>[\s\S]*?\}\);/g,
-  `return icons.filter(icon => 
-      icon.symbol.toLowerCase().includes(lowerSearch) || 
-      icon.name.toLowerCase().includes(lowerSearch) ||
-      icon.id.toLowerCase().includes(lowerSearch)
-    );
-  }, [search, icons]);
-  
-  const totalPages = Math.ceil(filteredIcons.length / itemsPerPage);
-  const currentIcons = filteredIcons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-`
+  '<span className="mt-auto text-xs font-mono text-zinc-400 uppercase font-bold tracking-wider">',
+  '<span className="mt-auto text-[10px] md:text-xs font-mono text-zinc-500 dark:text-zinc-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 uppercase font-bold tracking-wider transition-colors">'
 );
 
-// Replace filteredIcons.map with currentIcons.map in Home
+// Improve the main grid items
 code = code.replace(
-  /filteredIcons\.map\(\(icon, index\)/g,
-  'currentIcons.map((icon, index)'
+  'className="group flex flex-col items-center justify-center p-6 md:p-8 aspect-square rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300"',
+  'className="group flex flex-col items-center justify-center p-5 md:p-8 aspect-square rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm hover:shadow-lg hover:border-emerald-500 dark:hover:border-emerald-500 hover:-translate-y-1 hover:shadow-emerald-500/5 transition-all duration-300"'
 );
 
-// Inject pagination controls right before closing div of grid
+// Change grid columns for mobile from 2 to 3, so it looks denser and less blocky
 code = code.replace(
-  /<\/div>\n\s*\}\)\}\n\s*<\/div>\n\s*\)\}\n\s*<\/div>/g,
-  `</div>\n                 ${paginationSnippet}\n               </div>\n        )}\n      </div>`
+  '<div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-4">',
+  '<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-8 gap-3 md:gap-4">'
+);
+
+code = code.replace(
+  '<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 pb-20">',
+  '<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-5 pb-20">'
+);
+
+// Make the icon size in grid slightly smaller to give more breathing room
+code = code.replace(
+  '<div className="w-12 h-12 mb-4 group-hover:scale-125 transition-transform duration-300">',
+  '<div className="w-10 h-10 md:w-12 md:h-12 mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">'
+);
+
+// Update NPM installation section to have consistent radius
+code = code.replace(
+  'className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden relative group"',
+  'className="bg-white dark:bg-zinc-900 rounded-[2rem] p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden relative group"'
 );
 
 fs.writeFileSync('src/App.tsx', code);
