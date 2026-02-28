@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
-import { Search, Moon, Sun, X, Check, Copy, Download, Sparkles, CheckCircle, ArrowLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Search, Moon, Sun, ChevronLeft, ChevronRight, Check, Copy, Download, Sparkles, ArrowLeft } from 'lucide-react';
+import { motion } from 'motion/react';
 import SEOHelmet from './SEOHelmet';
 
 interface Coin {
@@ -91,6 +91,9 @@ export default function App() {
 
 function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
+  useEffect(() => { setCurrentPage(1); }, [search]);
   const navigate = useNavigate();
 
   const filteredIcons = useMemo(() => {
@@ -226,7 +229,7 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 pb-20">
-            {filteredIcons.map((icon, index) => (
+            {currentIcons.map((icon, index) => (
               <button
                 key={`${icon.symbol}-${index}`}
                 onClick={() => navigate(`/${icon.symbol.toLowerCase()}`)}
@@ -275,7 +278,7 @@ function IconDetail({ icons }: { icons: Coin[] }) {
   const cdnUrl = `https://essamamdani.github.io/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`;
   const pageUrl = `https://essamamdani.github.io/open-crypto-icons/${icon.symbol.toLowerCase()}`;
   const imgTag = `<img src="${cdnUrl}" alt="${icon.name} Logo" />`;
-  const reactTag = `import { ${icon.symbol.toUpperCase()}Icon } from 'open-crypto-icons';\n\n<${icon.symbol.toUpperCase()}Icon size={24} />`;
+  // reactTag was here `import { ${icon.symbol.toUpperCase()}Icon } from 'open-crypto-icons';\n\n<${icon.symbol.toUpperCase()}Icon size={24} />`;
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
@@ -330,9 +333,9 @@ function IconDetail({ icons }: { icons: Coin[] }) {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row"
+        className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row w-full max-w-5xl"
       >
-        <div className="flex-1 bg-zinc-50 dark:bg-zinc-950/50 p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
+        <div className="w-full md:w-5/12 bg-zinc-50 dark:bg-zinc-950/50 p-8 sm:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
           <div className="w-48 h-48 sm:w-64 sm:h-64 p-10 bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-xl shadow-emerald-500/5 border border-zinc-200 dark:border-zinc-800 mb-8 relative z-10 group">
             <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
