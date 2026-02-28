@@ -1,0 +1,20 @@
+const fs = require('fs');
+let code = fs.readFileSync('index.html', 'utf8');
+code = code.replace(
+  '</head>',
+  `    <!-- Redirect SPA logic for GitHub Pages -->
+    <script type="text/javascript">
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+  </head>`
+);
+fs.writeFileSync('index.html', code);
