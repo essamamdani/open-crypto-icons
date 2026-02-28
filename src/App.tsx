@@ -97,14 +97,18 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
   const navigate = useNavigate();
 
   const filteredIcons = useMemo(() => {
-    if (!search) return icons.slice(0, 100);
+    if (!search) return icons;
     const lowerSearch = search.toLowerCase();
-    return icons.filter(icon => 
+    return icons.filter((icon: any) => 
       icon.symbol.toLowerCase().includes(lowerSearch) || 
       icon.name.toLowerCase().includes(lowerSearch) ||
       icon.id.toLowerCase().includes(lowerSearch)
-    ).slice(0, 150); // limit to prevent DOM lag on massive search results
+    );
   }, [search, icons]);
+
+  const totalPages = Math.ceil(filteredIcons.length / itemsPerPage);
+  const currentIcons = filteredIcons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
 
   const featuredCoins = useMemo(() => {
     return icons.filter(i => ['btc','eth','usdt','sol','bnb','xrp','doge','ada'].includes(i.symbol.toLowerCase()));
@@ -228,8 +232,9 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
             <p className="text-2xl text-zinc-500 font-display">No icons found for "{search}"</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 pb-20">
-            {currentIcons.map((icon, index) => (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 pb-20">
+            {currentIcons.map((icon: any, index: number) => (
               <button
                 key={`${icon.symbol}-${index}`}
                 onClick={() => navigate(`/${icon.symbol.toLowerCase()}`)}
@@ -247,6 +252,29 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
               </button>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-12 flex justify-center items-center gap-4 w-full">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </div>
+          )}
+          </>
         )}
       </div>
     </>
@@ -335,12 +363,12 @@ function IconDetail({ icons }: { icons: Coin[] }) {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row w-full max-w-5xl"
       >
-        <div className="w-full md:w-5/12 bg-zinc-50 dark:bg-zinc-950/50 p-8 sm:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative">
+        <div className="w-full md:w-5/12 shrink-0 bg-zinc-50 dark:bg-zinc-950/50 p-6 md:p-8 lg:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
-          <div className="w-48 h-48 sm:w-64 sm:h-64 p-10 bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-xl shadow-emerald-500/5 border border-zinc-200 dark:border-zinc-800 mb-8 relative z-10 group">
+          <div className="w-40 h-40 lg:w-64 lg:h-64 p-6 lg:p-10 bg-white dark:bg-zinc-900 rounded-[2rem] lg:rounded-[2.5rem] shadow-xl shadow-emerald-500/5 border border-zinc-200 dark:border-zinc-800 mb-6 lg:mb-8 relative z-10 group">
             <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
           </div>
-          <h2 className="font-display text-4xl font-black mb-2 tracking-tight text-zinc-900 dark:text-white">{icon.name}</h2>
+          <h2 className="font-display text-3xl lg:text-4xl font-black mb-2 tracking-tight text-zinc-900 dark:text-white text-center break-all">{icon.name}</h2>
           <p className="text-zinc-500 font-mono text-sm bg-zinc-200/50 dark:bg-zinc-800/50 px-3 py-1 rounded-full uppercase">{icon.symbol}</p>
         </div>
 
