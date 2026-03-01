@@ -1,2 +1,5 @@
+The update_markets.py and seo_export.py scripts were executed successfully. SVGs were cleaned, the Vite app was built, and all changes were deployed to the gh-pages branch and pushed to master.
+
+New Counts:
 Downloaded SVGs: 6775
-Indexed coins: 6763
+Indexed Coins: 6762
