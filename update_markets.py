@@ -10,8 +10,8 @@ print(f"Total SVGs physically available: {len(valid_svgs)}")
 final_coins = []
 seen = set()
 
-print("Fetching up to page 50 from CoinGecko markets (12,500 coins)...")
-for page in range(1, 51):
+print("Fetching up to page 20 from CoinGecko markets (5,000 coins)...")
+for page in range(1, 21):
     url = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page={page}"
     try:
         res = requests.get(url, timeout=10)
@@ -46,7 +46,7 @@ for page in range(1, 51):
                         })
                         seen.add(sym)
                 print(f"Page {page} processed after retry. Total valid: {len(final_coins)}")
-        time.sleep(1.5)
+        time.sleep(2.5)
     except Exception as e:
         print(f"Error on page {page}: {e}")
 
