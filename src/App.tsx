@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
 import { Search, Moon, Sun, ChevronLeft, ChevronRight, Check, Copy, Download, Sparkles, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import SEOHelmet from './SEOHelmet';
+import Docs from './Docs';
 
 interface Coin {
   id: string;
@@ -15,25 +16,20 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
     }
-    return false;
+    return true; // Force dark mode by default
   });
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setDarkMode(e.matches);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  useEffect(() => {
+    useEffect(() => {
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.style.colorScheme = 'light';
     }
   }, [darkMode]);
 
@@ -76,6 +72,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home icons={icons} loading={loading} />} />
           <Route path="/about" element={<About />} />
+          <Route path="/docs" element={<Docs />} />
           <Route path="/:symbol" element={<IconDetail icons={icons} />} />
         </Routes>
       </main>
