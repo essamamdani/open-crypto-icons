@@ -16,21 +16,23 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved === 'dark';
+      const saved = localStorage.getItem('theme') || 'dark';
+      return saved === 'dark';
     }
-    return true; // Force dark mode by default
+    return true;
   });
 
     useEffect(() => {
-    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
+    const theme = darkMode ? 'dark' : 'light';
+    const html = document.documentElement;
+    if (theme === 'dark') {
+      html.classList.add('dark');
+      html.style.colorScheme = 'dark';
     } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
+      html.classList.remove('dark');
+      html.style.colorScheme = 'light';
     }
+    localStorage.setItem('theme', theme);
   }, [darkMode]);
 
   useEffect(() => {
@@ -142,6 +144,31 @@ function Home({ icons, loading }: { icons: Coin[], loading: boolean }) {
             >
               Beautiful, scalable, open-source crypto logos for your Web3 project.
             </motion.p>
+          )}
+
+          {!search && (
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="flex justify-center mb-12"
+            >
+              <div className="flex items-center gap-3 bg-white dark:bg-black/50 border border-zinc-200 dark:border-zinc-800/50 p-2 pl-5 pr-2 rounded-full shadow-sm hover:border-emerald-500/50 transition-colors">
+                <code className="text-zinc-700 dark:text-zinc-300 font-mono text-sm md:text-base">npm install open-crypto-icons</code>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText("npm install open-crypto-icons");
+                    alert("Copied!");
+                  }}
+                  className="p-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-emerald-500 hover:text-white rounded-full transition-colors text-zinc-500 dark:text-zinc-400"
+                  title="Copy command"
+                >
+                  <Copy size={16} />
+                </button>
+              </div>
+            </motion.div>
+
           )}
 
           <motion.div 
