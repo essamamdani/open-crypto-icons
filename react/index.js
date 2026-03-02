@@ -7,15 +7,13 @@ export const CryptoIcon = ({ symbol = 'btc', variant = 'colored', size = 24, cla
   const sym = symbol.toLowerCase();
   
   // As a lightweight package, we return an <img> tag pointing to our high-speed CDN.
-  // Alternatively we can use variants like colored, black, white, outline.
-  // We'll support 'colored' natively from TradingView (the main collection).
-  // The 'black', 'white', 'outline' variants will fall back to 'colored' if missing (from spothq mostly).
+  // Alternatively we can use variants like black, white, outline.
+  // 'colored' is the main native collection.
   
-  let dir = 'icons_svg'; // Main collection
+  let dir = 'icons_svg'; // Main collection (colored)
   if (variant === 'black') dir = 'icons/black';
   if (variant === 'white') dir = 'icons/white';
   if (variant === 'outline') dir = 'icons/outline';
-  if (variant === 'colored') dir = 'icons/colored';
   
   const src = `https://essamamdani.github.io/open-crypto-icons/${dir}/${sym}.svg`;
   
