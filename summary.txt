@@ -1,3 +1,2 @@
-The cron job is complete! Here are the updated counts:
-Downloaded SVGs: 6775
-Indexed coins: 6754
+SVG_COUNT=15195
+COIN_COUNT=
