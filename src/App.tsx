@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
 import { Search, Moon, Sun, ChevronLeft, ChevronRight, Check, Copy, Download, Sparkles, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import { CryptoIcon } from 'open-crypto-icons/react';
 import SEOHelmet from './SEOHelmet';
 import Docs from './Docs';
 
@@ -399,16 +400,38 @@ function IconDetail({ icons }: { icons: Coin[] }) {
         <div className="flex-1 min-w-0 p-6 md:p-8 lg:p-12 flex flex-col gap-8">
           <div>
              
-          {/* React Component Usage */}
+          {/* React Component Usage Preview */}
           <div className="bg-zinc-100 dark:bg-zinc-800/50 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-700/50 mb-8">
-            <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Sparkles size={14}/> React Usage (NPM)</h3>
+            <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 flex items-center justify-between">
+              <span className="flex items-center gap-2"><Sparkles size={14}/> React Component (Live Preview)</span>
+            </h3>
+            
+            <div className="flex flex-col sm:flex-row gap-6 mb-6">
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
+                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="colored" size={48} className="drop-shadow-sm mb-3" />
+                <span className="text-xs font-mono text-zinc-500">colored</span>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
+                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="black" size={48} className="mb-3 opacity-80" />
+                <span className="text-xs font-mono text-zinc-500">black</span>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-zinc-900 dark:bg-zinc-950 rounded-xl border border-zinc-800 shadow-inner">
+                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="white" size={48} className="mb-3" />
+                <span className="text-xs font-mono text-zinc-400">white</span>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
+                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="outline" size={48} className="mb-3 opacity-70" />
+                <span className="text-xs font-mono text-zinc-500">outline</span>
+              </div>
+            </div>
+
             <div className="bg-white dark:bg-black/50 p-4 rounded-xl flex items-start justify-between group/code border border-zinc-200 dark:border-zinc-800/50 w-full overflow-hidden">
               <pre className="text-zinc-700 dark:text-zinc-300 font-mono text-[10px] md:text-xs leading-relaxed overflow-x-auto w-full whitespace-pre-wrap break-all pr-2">
-                <span className="text-purple-600 dark:text-purple-400">import</span> {'{'} <span className="text-blue-600 dark:text-blue-400">CryptoIcon</span> {'}'} <span className="text-purple-600 dark:text-purple-400">from</span> <span className="text-emerald-600 dark:text-green-400">'open-crypto-icons'</span>;<br/><br/>
+                <span className="text-purple-600 dark:text-purple-400">import</span> {'{'} <span className="text-blue-600 dark:text-blue-400">CryptoIcon</span> {'}'} <span className="text-purple-600 dark:text-purple-400">from</span> <span className="text-emerald-600 dark:text-green-400">'open-crypto-icons/react'</span>;<br/><br/>
                 {'<'}<span className="text-blue-600 dark:text-blue-400">CryptoIcon</span> symbol="<span className="text-emerald-600 dark:text-green-400">{icon.symbol.toLowerCase()}</span>" variant="<span className="text-emerald-600 dark:text-green-400">colored</span>" size={'{'}48{'}'} {'/>'}
               </pre>
               <button 
-                onClick={() => navigator.clipboard.writeText(`import { CryptoIcon } from 'open-crypto-icons';\n\n<CryptoIcon symbol="${icon.symbol.toLowerCase()}" variant="colored" size={48} />`)}
+                onClick={() => navigator.clipboard.writeText(`import { CryptoIcon } from 'open-crypto-icons/react';\n\n<CryptoIcon symbol="${icon.symbol.toLowerCase()}" variant="colored" size={48} />`)}
                 className="text-zinc-400 hover:text-emerald-500 ml-2 mt-1 flex-shrink-0 transition-colors"
                 title="Copy code"
               >
