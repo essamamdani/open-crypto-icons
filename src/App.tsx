@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
 import { Search, Moon, Sun, ChevronLeft, ChevronRight, Check, Copy, Download, Sparkles, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { CryptoIcon } from 'open-crypto-icons/react';
+import { CryptoIcon } from '../react/index.jsx';
 import SEOHelmet from './SEOHelmet';
 import Docs from './Docs';
 
