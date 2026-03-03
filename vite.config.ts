@@ -7,5 +7,12 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
-  base: '/open-crypto-icons/'
+  base: '/open-crypto-icons/',
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        '.js': 'jsx'
+      }
+    }
+  }
 })
