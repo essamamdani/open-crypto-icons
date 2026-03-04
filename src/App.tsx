@@ -310,6 +310,14 @@ function IconDetail({ icons }: { icons: Coin[] }) {
   const { symbol } = useParams();
   const navigate = useNavigate();
   const [copiedType, setCopiedType] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<'colored' | 'black' | 'white' | 'outline'>('colored');
+
+  const getVariantDir = (v: string) => {
+    if (v === 'black') return 'icons/black';
+    if (v === 'white') return 'icons/white';
+    if (v === 'outline') return 'icons/outline';
+    return 'icons_svg';
+  };
   
   const icon = icons.find(i => i.symbol.toLowerCase() === symbol?.toLowerCase());
 
@@ -328,7 +336,7 @@ function IconDetail({ icons }: { icons: Coin[] }) {
     );
   }
 
-  const cdnUrl = `https://essamamdani.github.io/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`;
+  const cdnUrl = `https://essamamdani.github.io/open-crypto-icons/${getVariantDir(selectedVariant)}/${icon.symbol.toLowerCase()}.svg`;
   const pageUrl = `https://essamamdani.github.io/open-crypto-icons/${icon.symbol.toLowerCase()}`;
   const imgTag = `<img src="${cdnUrl}" alt="${icon.name} Logo" />`;
   // reactTag was here `import { ${icon.symbol.toUpperCase()}Icon } from 'open-crypto-icons';\n\n<${icon.symbol.toUpperCase()}Icon size={24} />`;
@@ -340,7 +348,7 @@ function IconDetail({ icons }: { icons: Coin[] }) {
   };
 
   const downloadIcon = (format: string) => {
-    const svgPath = `/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`;
+    const svgPath = `/open-crypto-icons/${getVariantDir(selectedVariant)}/${icon.symbol.toLowerCase()}.svg`;
     if (format === 'svg') {
       const link = document.createElement('a');
       link.href = svgPath;
@@ -358,7 +366,7 @@ function IconDetail({ icons }: { icons: Coin[] }) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         if (format === 'jpg') {
-          ctx.fillStyle = '#FFFFFF';
+          ctx.fillStyle = selectedVariant === 'white' ? '#000000' : '#FFFFFF';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
         ctx.drawImage(img, 0, 0, 512, 512);
@@ -390,8 +398,12 @@ function IconDetail({ icons }: { icons: Coin[] }) {
       >
         <div className="w-full md:w-5/12 shrink-0 bg-zinc-50 dark:bg-zinc-950/50 p-6 md:p-8 lg:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none" />
-          <div className="w-40 h-40 lg:w-64 lg:h-64 p-6 lg:p-10 bg-white dark:bg-zinc-900 rounded-[2rem] lg:rounded-[2.5rem] shadow-xl shadow-emerald-500/5 border border-zinc-200 dark:border-zinc-800 mb-6 lg:mb-8 relative z-10 group">
-            <img src={`/open-crypto-icons/icons_svg/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
+          <div className={`w-40 h-40 lg:w-64 lg:h-64 p-6 lg:p-10 rounded-[2rem] lg:rounded-[2.5rem] shadow-xl shadow-emerald-500/5 border border-zinc-200 dark:border-zinc-800 mb-6 lg:mb-8 relative z-10 group transition-colors ${
+            selectedVariant === 'white' ? 'bg-zinc-900 dark:bg-black' :
+            selectedVariant === 'black' ? 'bg-zinc-50 dark:bg-zinc-200' :
+            'bg-white dark:bg-zinc-900'
+          }`}>
+            <img src={`/open-crypto-icons/${getVariantDir(selectedVariant)}/${icon.symbol.toLowerCase()}.svg`} alt={icon.name} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />
           </div>
           <h2 className="font-display text-3xl lg:text-4xl font-black mb-2 tracking-tight text-zinc-900 dark:text-white text-center break-all">{icon.name}</h2>
           <p className="text-zinc-500 font-mono text-sm bg-zinc-200/50 dark:bg-zinc-800/50 px-3 py-1 rounded-full uppercase">{icon.symbol}</p>
@@ -406,32 +418,32 @@ function IconDetail({ icons }: { icons: Coin[] }) {
               <span className="flex items-center gap-2"><Sparkles size={14}/> React Component (Live Preview)</span>
             </h3>
             
-            <div className="flex flex-col sm:flex-row gap-6 mb-6">
-              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
-                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="colored" size={48} className="drop-shadow-sm mb-3" />
-                <span className="text-xs font-mono text-zinc-500">colored</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
-                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="black" size={48} className="mb-3 opacity-80" />
-                <span className="text-xs font-mono text-zinc-500">black</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-zinc-900 dark:bg-zinc-950 rounded-xl border border-zinc-800 shadow-inner">
-                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="white" size={48} className="mb-3" />
-                <span className="text-xs font-mono text-zinc-400">white</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-inner">
-                <CryptoIcon symbol={icon.symbol.toLowerCase()} variant="outline" size={48} className="mb-3 opacity-70" />
-                <span className="text-xs font-mono text-zinc-500">outline</span>
-              </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-6">
+              {['colored', 'black', 'white', 'outline'].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setSelectedVariant(v as any)}
+                  className={`flex flex-col items-center justify-center p-4 sm:p-6 rounded-xl border shadow-inner transition-all hover:scale-105 active:scale-95 ${
+                    selectedVariant === v ? 'ring-2 ring-emerald-500 border-emerald-500 dark:border-emerald-500' : 'border-zinc-200 dark:border-zinc-700'
+                  } ${
+                    v === 'white' ? 'bg-zinc-900 dark:bg-zinc-950' : 
+                    v === 'black' ? 'bg-zinc-50 dark:bg-zinc-200' : 
+                    'bg-white dark:bg-zinc-900'
+                  }`}
+                >
+                  <CryptoIcon symbol={icon.symbol.toLowerCase()} variant={v as any} size={40} className={`mb-3 ${v==='black'?'opacity-80':''} ${v==='outline'?'opacity-70':''}`} />
+                  <span className={`text-xs font-mono ${v==='white'?'text-zinc-400': v==='black'?'text-zinc-600 dark:text-zinc-800':'text-zinc-500'}`}>{v}</span>
+                </button>
+              ))}
             </div>
 
             <div className="bg-white dark:bg-black/50 p-4 rounded-xl flex items-start justify-between group/code border border-zinc-200 dark:border-zinc-800/50 w-full overflow-hidden">
               <pre className="text-zinc-700 dark:text-zinc-300 font-mono text-[10px] md:text-xs leading-relaxed overflow-x-auto w-full whitespace-pre-wrap break-all pr-2">
                 <span className="text-purple-600 dark:text-purple-400">import</span> {'{'} <span className="text-blue-600 dark:text-blue-400">CryptoIcon</span> {'}'} <span className="text-purple-600 dark:text-purple-400">from</span> <span className="text-emerald-600 dark:text-green-400">'open-crypto-icons/react'</span>;<br/><br/>
-                {'<'}<span className="text-blue-600 dark:text-blue-400">CryptoIcon</span> symbol="<span className="text-emerald-600 dark:text-green-400">{icon.symbol.toLowerCase()}</span>" variant="<span className="text-emerald-600 dark:text-green-400">colored</span>" size={'{'}48{'}'} {'/>'}
+                {'<'}<span className="text-blue-600 dark:text-blue-400">CryptoIcon</span> symbol="<span className="text-emerald-600 dark:text-green-400">{icon.symbol.toLowerCase()}</span>" variant="<span className="text-emerald-600 dark:text-green-400">{selectedVariant}</span>" size={'{'}48{'}'} {'/>'}
               </pre>
               <button 
-                onClick={() => navigator.clipboard.writeText(`import { CryptoIcon } from 'open-crypto-icons/react';\n\n<CryptoIcon symbol="${icon.symbol.toLowerCase()}" variant="colored" size={48} />`)}
+                onClick={() => navigator.clipboard.writeText(`import { CryptoIcon } from 'open-crypto-icons/react';\n\n<CryptoIcon symbol="${icon.symbol.toLowerCase()}" variant="${selectedVariant}" size={48} />`)}
                 className="text-zinc-400 hover:text-emerald-500 ml-2 mt-1 flex-shrink-0 transition-colors"
                 title="Copy code"
               >
